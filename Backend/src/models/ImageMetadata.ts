@@ -14,6 +14,8 @@ export interface IImageMetadata extends Document {
   pathProcessed: string; 
   mimeTypeOriginal: string; 
   sizeOriginalBytes: number; 
+  mimeTypeProcessed?: string;
+  sizeProcessedBytes?: number;
   appliedTransformations: ITransformation[];
 }
 
@@ -64,6 +66,12 @@ const ImageMetadataSchema = new Schema<IImageMetadata>(
     sizeOriginalBytes: {
       type: Number,
       required: [true, 'File size in bytes is mandatory'],
+    },
+    mimeTypeProcessed: {
+      type: String
+    },
+    sizeProcessedBytes: { 
+      type: Number 
     },
     appliedTransformations: {
       type: [TransformationSchema],
