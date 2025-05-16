@@ -23,9 +23,22 @@ const app: Express = express();
 // --- Connect to Database ---
 connectDB(); // Call the function to establish MongoDB connection
 
-// --- Core Middleware ---
-// Enable CORS (configure as needed for your frontend URL in production)
-app.use(cors()); // Example: app.use(cors({ origin: 'http://localhost:3001' }));
+const allowedOrigins = ['http://localhost:5173'];
+if (process.env.FRONTEND_PROD_URL) {
+  allowedOrigins.push(process.env.FRONTEND_PROD_URL);
+}
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true // If you plan to use cookies or sessions later
+}));
 
 // Body parsing middleware
 app.use(express.json()); // To parse JSON bodies
