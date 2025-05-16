@@ -27,7 +27,7 @@ export const uploadOriginalImageHandler = async (
     // Only if validation middleware doesn't work
     const userId = req.user?.id;
     if (!userId) { 
-        res.status(401).json({ errors: [{ msg: 'Usuario not authenticated.' }] });
+        res.status(401).json({ errors: [{ msg: 'User not authenticated.' }] });
         return;
     }
 

@@ -41,7 +41,6 @@ const ImageMetadataSchema = new Schema<IImageMetadata>(
       trim: true,
     },
     storageFileNameOriginal: {
-      // Nombre con el que se guarda en disco, podría ser un UUID o timestamp para evitar colisiones
       type: String,
       required: [true, 'Storage file name is a mandatory field'],
       unique: true,

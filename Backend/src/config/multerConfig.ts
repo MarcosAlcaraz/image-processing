@@ -25,7 +25,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallb
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Type of file is not acepted, pleace upload compatible images (JPEG, PNG, GIF, WEBP).'));
+    cb(new Error('File type not accepted. Please upload compatible images (JPEG, PNG, GIF, WEBP).'));
 
   }
 };
@@ -34,7 +34,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 20 * 10240 * 10240, // 20 MB
+    fileSize: 20 * 1024 * 1024 // 20MB
   },
 });
 

@@ -1,46 +1,41 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { registerUser, loginUser } from '../controllers/authController';
-// Opcional: Middleware para manejar los errores de validación de forma centralizada
-// import { handleValidationErrors } from '../middleware/validationMiddleware';
+import { handleValidationErrors } from '../middleware/validationErrorHandler';
 
 const router = Router();
 
-// Reglas de validación para el registro
 const registerValidationRules = [
   body('email')
-    .isEmail().withMessage('Por favor, introduce un correo electrónico válido.')
+    .isEmail().withMessage('Please provide a valid email address.')
     .normalizeEmail(),
   body('password')
-    .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
+    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long.'),
   body('username')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
-    .isLength({ min: 2 }).withMessage('El nombre de usuario debe tener al menos 2 caracteres.'),
+    .isLength({ min: 2 }).withMessage('Username must be at least 2 characters long if provided.'),
 ];
 
-// Reglas de validación para el login
 const loginValidationRules = [
   body('email')
-    .isEmail().withMessage('Por favor, introduce un correo electrónico válido.')
+    .isEmail().withMessage('Please provide a valid email address.')
     .normalizeEmail(),
   body('password')
-    .notEmpty().withMessage('La contraseña es obligatoria.'),
+    .notEmpty().withMessage('Password is required.'),
 ];
 
-// POST /api/auth/register
 router.post(
   '/register',
   registerValidationRules,
-  // (Opcional) handleValidationErrors, // Si creas un middleware para esto
+  handleValidationErrors,
   registerUser
 );
 
-// POST /api/auth/login
 router.post(
   '/login',
   loginValidationRules,
-  // (Opcional) handleValidationErrors,
+  handleValidationErrors,
   loginUser
 );
 
