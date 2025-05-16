@@ -1,95 +1,100 @@
-import { Request, Response, NextFunction } from 'express';
-import multer from 'multer'; // To check for MulterError instance
+import dotenv from 'dotenv';
+dotenv.config(); // Load environment variables from .env file as early as possible
 
-// Define a more specific type for your error response if you like
-interface ErrorResponse {
-  name: string;
-  message: string;
-  stack?: string;
-  details?: any; // For things like Mongoose validation errors array
-}
+import express, { Express, Request, Response, NextFunction } from 'express';
+import http from 'http';
+import mongoose from 'mongoose';
+import cors from 'cors'; // If you use CORS
 
-export const globalErrorHandler = (
-  err: any, // Using 'any' for err to handle various error shapes, but you can create a more specific Error type
-  req: Request,
-  res: Response,
-  next: NextFunction // 'next' is not typically used in the final error handler, but Express requires its signature
-): void => {
-  console.error("-------------------------- ERROR STACK --------------------------");
-  console.error(err); // Log the full error object for detailed server-side debugging
-  console.error("-----------------------------------------------------------------");
+// Import configurations and utilities
+import connectDB from './config/database';
 
-  let statusCode = err.statusCode || 500;
-  let message = err.message || 'An unexpected error occurred on the server.'; // Default generic message
-  let errorName = err.name || 'Error';
-  let errorDetails: any; // For more structured error details like validation arrays
+// Import middleware
+import { globalErrorHandler } from './middleware/globalErrorHandler'; // Your new global error handler
 
-  // Mongoose Validation Errors
-  if (err.name === 'ValidationError' && err.errors) {
-    statusCode = 400; // Bad Request
-    message = 'Validation failed. Please check your input.';
-    errorName = 'ValidationError';
-    errorDetails = Object.values(err.errors).map((e: any) => ({
-      field: e.path,
-      message: e.message,
-      value: e.value, // Optional: include the value that failed validation
-    }));
+// Import routes
+import authRoutes from './routes/authRoutes';
+import imageRoutes from './routes/imageRoutes';
+// import other routes as your project grows
+
+// --- Initialize Express App ---
+const app: Express = express();
+
+// --- Connect to Database ---
+connectDB(); // Call the function to establish MongoDB connection
+
+// --- Core Middleware ---
+// Enable CORS (configure as needed for your frontend URL in production)
+app.use(cors()); // Example: app.use(cors({ origin: 'http://localhost:3001' }));
+
+// Body parsing middleware
+app.use(express.json()); // To parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // To parse URL-encoded bodies
+
+// --- Static Files (Optional) ---
+// If your 'public' folder (containing uploads) should be publicly accessible
+// import path from 'path';
+// app.use('/static', express.static(path.join(__dirname, '../public'))); // Adjust path if needed
+
+// --- API Routes ---
+app.use('/api/auth', authRoutes);
+app.use('/api/images', imageRoutes);
+// app.use('/api/other-feature', otherRoutes);
+
+// --- 404 Not Found Handler ---
+// This should be after all your API routes
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const error = new Error(`Route not found - ${req.method} ${req.originalUrl}`);
+  (error as any).statusCode = 404; // Add a statusCode property
+  next(error); // Pass the error to the global error handler
+});
+
+// --- Global Error Handler ---
+// This MUST be the last piece of middleware in the stack
+app.use(globalErrorHandler);
+
+// --- Start Server ---
+const PORT: string | number = process.env.PORT || 3000;
+const server = http.createServer(app);
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port: ${PORT}`);
+  console.log(`Access API at: http://localhost:${PORT}`);
+  if (process.env.NODE_ENV) {
+    console.log(`Running in ${process.env.NODE_ENV} mode.`);
   }
-  // Mongoose CastErrors (e.g., invalid ObjectId format)
-  else if (err.name === 'CastError' && err.kind === 'ObjectId') {
-    statusCode = 400; // Bad Request
-    message = `Invalid ID format provided for resource path: ${err.path}. Expected a valid ObjectId.`;
-    errorName = 'CastError';
-    errorDetails = { path: err.path, value: err.value };
-  }
-  // Multer errors
-  else if (err instanceof multer.MulterError) {
-    statusCode = 400; // Bad Request
-    message = `File upload error: ${err.message}`; // Multer's message is usually informative
-    errorName = 'MulterError';
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      message = 'File is too large. Please ensure it is within the allowed size limit.';
-    }
-    // You can add more specific Multer error codes here
-    // e.g., LIMIT_FILE_COUNT, LIMIT_UNEXPECTED_FILE
-    errorDetails = { code: err.code, field: err.field };
-  }
-  // Custom application errors might have a 'statusCode' and 'isOperational' flag
-  else if (err.isOperational) { // A flag you might set on your custom errors
-    // Use the error's own status and message
-  }
+});
 
-  // If it's an unexpected server error and status code is still 2xx (which shouldn't happen if error is thrown correctly)
-  // or if no specific status code was set from the error object, default to 500.
-  if (statusCode < 400 || statusCode > 599 || (res.statusCode === 200 && statusCode !== err.statusCode)) {
-      statusCode = 500;
-      message = 'An unexpected internal server error occurred.';
-      errorName = 'InternalServerError';
-  }
-
-
-  const errorResponsePayload: { error: ErrorResponse } = {
-    error: {
-      name: errorName,
-      message: message,
-    },
-  };
-
-  if (errorDetails) {
-    errorResponsePayload.error.details = errorDetails;
-  }
-
-  // Only include stack trace in development environment
-  if (process.env.NODE_ENV === 'development' && err.stack) {
-    errorResponsePayload.error.stack = err.stack;
-  }
-
-  // Ensure headers haven't already been sent
-  if (!res.headersSent) {
-    res.status(statusCode).json(errorResponsePayload);
-  } else {
-    // If headers were already sent, delegate to the default Express error handler
-    // which closes the connection and fails the request.
-    next(err);
-  }
+// --- Graceful Shutdown ---
+const shutdown = (signal: string) => {
+  console.log(`\n${signal} signal received. Closing server...`);
+  server.close(() => {
+    console.log('HTTP server closed.');
+    mongoose.connection.close(false).then(() => { // Mongoose 7.x+ .close(false)
+      console.log('MongoDB connection closed.');
+      process.exit(0);
+    }).catch(err => {
+      console.error('Error closing MongoDB connection:', err);
+      process.exit(1);
+    });
+  });
 };
+
+process.on('SIGINT', () => shutdown('SIGINT')); // Ctrl+C
+process.on('SIGTERM', () => shutdown('SIGTERM')); // kill command
+
+// Handle unhandled promise rejections (optional but good practice)
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application specific logging, throwing an error, or other logic here
+  // Consider exiting the process cleanly after logging, as the app might be in an unstable state
+  // server.close(() => process.exit(1)); // Example of exiting
+});
+
+// Handle uncaught exceptions (optional but good practice)
+process.on('uncaughtException', (error: Error) => {
+  console.error('Uncaught Exception:', error);
+  // Application specific logging
+  // It's generally recommended to exit the process cleanly, as the app is in an undefined state
+  // server.close(() => process.exit(1)); // Example of exiting
+});
