@@ -5,7 +5,6 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// For security, ends backend here if .end is not defined or created
 if (!MONGODB_URI) {
   console.error('Error: MONGODB_URI is not defined in .env file');
   process.exit(1); 

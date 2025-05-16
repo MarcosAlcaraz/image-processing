@@ -1,8 +1,6 @@
 import React, { useState, type ChangeEvent, type FormEvent } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { uploadImage, type ImageUploadResponse } from '../../services/imageService';
-// import FormField from '../common/FormField';
 
 const ImageUploadForm: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -11,7 +9,6 @@ const ImageUploadForm: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { token } = useAuth();
-//   const navigate = useNavigate();
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     setError(null);

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { type User, type AuthContextType } from '../types/auth';
 
-// Create the context with a default undefined value initially to ensure consumers are within a Provider
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -11,10 +10,9 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading until we check localStorage
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // On initial app load, try to load token and user from localStorage
     try {
       const storedToken = localStorage.getItem('authToken');
       const storedUserString = localStorage.getItem('authUser');
@@ -37,7 +35,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('authUser', JSON.stringify(userData));
     setUser(userData);
     setToken(receivedToken);
-    setIsLoading(false); // Ensure loading is false after login
+    setIsLoading(false); 
   };
 
   const logout = () => {
@@ -45,9 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('authUser');
     setUser(null);
     setToken(null);
-    setIsLoading(false); // Ensure loading is false after logout
-    // Optionally, redirect to login page or home page here using useNavigate if needed
-    // navigate('/login');
+    setIsLoading(false);
   };
 
   const isAuthenticated = !!token && !!user;
@@ -59,7 +55,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
-// Custom hook to use the auth context easily
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {

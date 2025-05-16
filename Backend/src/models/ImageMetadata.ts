@@ -6,7 +6,7 @@ interface ITransformation {
 }
 
 export interface IImageMetadata extends Document {
-  user: Types.ObjectId; // Is From user id reference
+  user: Types.ObjectId; // is From user id reference
   originalFileName: string; 
   storageFileNameOriginal: string; 
   storageFileNameProcessed: string; 
@@ -75,7 +75,8 @@ const ImageMetadataSchema = new Schema<IImageMetadata>(
     appliedTransformations: {
       type: [TransformationSchema],
       validate: [
-        (val: ITransformation[]) => val.length >= 3, // Three transformations are required and set as default here
+        // three transformations are required and set as default here but we apply more than 3
+        (val: ITransformation[]) => val.length >= 3,
         'Three transformations are required to apply.',
       ],
       default: [],

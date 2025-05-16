@@ -1,12 +1,13 @@
 // import React from 'react';
-import { Routes, Route } from 'react-router-dom'; // Removed Link as it's used in Navbar now
+import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import UploadPage from './pages/UploadPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import Navbar from './components/common/Navbar'; // Import Navbar
+
+import Navbar from './components/common/Navbar';
 
 function App() {
   return (
@@ -34,7 +35,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Add more routes here */}
         </Routes>
       </div>
     </>

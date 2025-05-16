@@ -39,7 +39,7 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// Middleware to hash the password
+// Middleware to hash the password MANDATORY
 UserSchema.pre<IUser>('save', async function (next) {
   if (!this.isModified('password')) {
     return next();

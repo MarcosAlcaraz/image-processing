@@ -37,36 +37,29 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  credentials: true // If you plan to use cookies or sessions later
+  credentials: true 
 }));
 
 // Body parsing middleware
-app.use(express.json()); // To parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // To parse URL-encoded bodies
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
-// --- Static Files (Optional) ---
-// If your 'public' folder (containing uploads) should be publicly accessible
-// import path from 'path';
-// app.use('/static', express.static(path.join(__dirname, '../public'))); // Adjust path if needed
 
-// --- API Routes ---
+
 app.use('/api/auth', authRoutes);
 app.use('/api/images', imageRoutes);
-// app.use('/api/other-feature', otherRoutes);
 
-// --- 404 Not Found Handler ---
-// This should be after all your API routes
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   const error = new Error(`Route not found - ${req.method} ${req.originalUrl}`);
-  (error as any).statusCode = 404; // Add a statusCode property
-  next(error); // Pass the error to the global error handler
+  (error as any).statusCode = 404;
+  next(error); 
 });
 
-// --- Global Error Handler ---
-// This MUST be the last piece of middleware in the stack
+
 app.use(globalErrorHandler);
 
-// --- Start Server ---
+// Start Server 
 const PORT: string | number = process.env.PORT || 3000;
 const server = http.createServer(app);
 
@@ -83,7 +76,7 @@ const shutdown = (signal: string) => {
   console.log(`\n${signal} signal received. Closing server...`);
   server.close(() => {
     console.log('HTTP server closed.');
-    mongoose.connection.close(false).then(() => { // Mongoose 7.x+ .close(false)
+    mongoose.connection.close(false).then(() => {
       console.log('MongoDB connection closed.');
       process.exit(0);
     }).catch(err => {
@@ -93,21 +86,13 @@ const shutdown = (signal: string) => {
   });
 };
 
-process.on('SIGINT', () => shutdown('SIGINT')); // Ctrl+C
-process.on('SIGTERM', () => shutdown('SIGTERM')); // kill command
+process.on('SIGINT', () => shutdown('SIGINT')); 
+process.on('SIGTERM', () => shutdown('SIGTERM')); 
 
-// Handle unhandled promise rejections (optional but good practice)
 process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Application specific logging, throwing an error, or other logic here
-  // Consider exiting the process cleanly after logging, as the app might be in an unstable state
-  // server.close(() => process.exit(1)); // Example of exiting
 });
 
-// Handle uncaught exceptions (optional but good practice)
 process.on('uncaughtException', (error: Error) => {
   console.error('Uncaught Exception:', error);
-  // Application specific logging
-  // It's generally recommended to exit the process cleanly, as the app is in an undefined state
-  // server.close(() => process.exit(1)); // Example of exiting
 });

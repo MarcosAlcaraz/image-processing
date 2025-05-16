@@ -13,7 +13,7 @@ import { handleValidationErrors } from '../middleware/validationErrorHandler';
 
 const router = Router();
 
-// POST /api/images/upload (Multer handles file validation here)
+// POST /api/images/upload
 router.post(
   '/upload',
   protect,
@@ -37,7 +37,7 @@ router.post(
   uploadOriginalImageHandler
 );
 
-// GET /api/images (No specific input params to validate yet, besides JWT handled by 'protect')
+// GET /api/images
 router.get(
   '/',
   protect,

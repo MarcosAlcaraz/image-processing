@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken'; // Importar Secret y SignOptions
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 
 const jwtSecretEnv: string | undefined = process.env.JWT_SECRET;

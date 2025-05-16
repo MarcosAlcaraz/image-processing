@@ -59,7 +59,7 @@ const Navbar: React.FC = () => {
   );
 };
 
-// Basic inline styles (consider moving to a CSS file for larger apps)
+// inline styles for now
 const navStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',

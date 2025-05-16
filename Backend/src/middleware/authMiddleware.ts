@@ -9,7 +9,7 @@ if (!JWT_SECRET) {
 }
 
 export interface AuthenticatedRequest extends Request {
-  user?: { id: string }; // Thi sis According to index.d.ts, this should be the type of user in the request from JWT
+  user?: { id: string };
 }
 
 export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
@@ -17,12 +17,11 @@ export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunc
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-        // Get token from header
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload & { id: string }; 
       req.user = { id: decoded.id };
 
-      next(); // Next middleware
+      next();
     } catch (error) {
       console.error('Error in the token authentication:', error);
       res.status(401).json({ errors: [{ msg: 'Token is not valid, autorization denied' }] });
