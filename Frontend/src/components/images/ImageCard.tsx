@@ -102,6 +102,15 @@ const ImageCard: React.FC<ImageCardProps> = ({ imageMetadata, apiBaseUrl }) => {
             <p>No preview available</p>
         </div>
       }
+      <p style={detailStyle}><strong>Uploaded:</strong> {new Date(imageMetadata.createdAt).toLocaleDateString()}</p>
+      <p style={detailStyle}><strong>Original Size:</strong> {(imageMetadata.sizeOriginalBytes / 1024).toFixed(2)} KB</p>
+      <p style={detailStyle}><strong>Transformations:</strong></p>
+      <ul style={{ listStyleType: 'disc', paddingLeft: '20px', fontSize: '0.85em', margin: '5px 0' }}>
+        {imageMetadata.appliedTransformations.map((transform, index) => (
+          <li key={index}>{transform.type}</li>
+        ))}
+      </ul>
+
     </div>
   );
 };
@@ -123,5 +132,12 @@ const ImageCard: React.FC<ImageCardProps> = ({ imageMetadata, apiBaseUrl }) => {
     marginBottom: '10px',
     backgroundColor: '#f0f0f0',
   };
+
+  const detailStyle: React.CSSProperties = {
+  fontSize: '0.9em',
+  marginBottom: '5px',
+  wordWrap: 'break-word',
+};
+
 
 export default ImageCard;
